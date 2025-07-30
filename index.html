@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>为了你，我愿意改变一切</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <title>Indulger - Full Stack Engineer | 粒子艺术展示</title>
+    <link rel="icon" href="./indulger_avatar.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -14,517 +13,487 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
             overflow-x: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .container {
-            width: 100%;
-            min-height: 100vh;
-        }
-
-        /* Hero Section */
-        .hero {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24, #ff9ff3, #54a0ff);
-            background-size: 400% 400%;
-            animation: gradientShift 8s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        .hero-content {
-            text-align: center;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 8vw, 6rem);
-            font-weight: 700;
-            margin-bottom: 2rem;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            opacity: 0;
-            transform: translateY(50px);
-        }
-
-        .hero p {
-            font-size: clamp(1rem, 3vw, 1.5rem);
-            margin-bottom: 3rem;
-            max-width: 600px;
             line-height: 1.6;
-            opacity: 0;
-            transform: translateY(30px);
         }
 
-        /* Floating Hearts */
-        .heart {
-            position: absolute;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 2rem;
-            animation: float 6s ease-in-out infinite;
+        /* 粒子容器样式升级 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.02) 0%, transparent 70%);
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
+        #canvas-container canvas {
+            display: block;
+            filter: brightness(1.2) contrast(1.1);
         }
 
-        /* Section Styling */
-        .section {
-            min-height: 100vh;
-            padding: 5rem 2rem;
+        /* 控制面板升级 */
+        .controls {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            gap: 15px;
+            flex-direction: column;
         }
 
-        .section:nth-child(even) {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-        }
-
-        .section:nth-child(odd) {
-            background: linear-gradient(135deg, #8b5cf6, #a855f7);
-        }
-
-        .section-content {
-            max-width: 800px;
-            text-align: center;
-        }
-
-        .section h2 {
-            font-size: clamp(2rem, 5vw, 4rem);
-            margin-bottom: 2rem;
-            opacity: 0;
-            transform: translateX(-100px);
-        }
-
-        .section p {
-            font-size: clamp(1rem, 2.5vw, 1.3rem);
-            line-height: 1.8;
-            margin-bottom: 2rem;
-            opacity: 0;
-            transform: translateX(100px);
-        }
-
-        /* Memory Gallery */
-        .memory-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-
-        .memory-card {
+        .control-btn {
+            padding: 12px 20px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 12px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        /* 信息面板 */
+        .info-panel {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 400px;
+            transform: translateY(100px);
             opacity: 0;
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
+            animation: slideUp 1s ease 2s forwards;
         }
 
-        .memory-card:hover {
-            transform: scale(1.05);
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
-        .memory-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #ffd700;
+        .info-panel h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #ffffff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        /* Promise Section */
-        .promise-list {
-            list-style: none;
-            margin: 2rem 0;
+        .info-panel .title {
+            font-size: 16px;
+            color: #a8edea;
+            margin-bottom: 15px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        .promise-list li {
-            font-size: 1.2rem;
-            margin: 1rem 0;
-            padding: 1rem;
+        .info-panel .description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .social-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            border-left: 4px solid #ffd700;
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        /* Call to Action */
-        .cta-button {
-            display: inline-block;
-            padding: 1rem 3rem;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
             color: white;
             text-decoration: none;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            font-size: 12px;
+            font-weight: 500;
             transition: all 0.3s ease;
-            opacity: 0;
-            transform: translateY(30px);
         }
 
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+        .social-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
         }
 
-        /* Particle Background */
-        .particles {
+        /* 技术栈标签 */
+        .tech-stack {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
             z-index: 1000;
-            left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0;
+            animation: fadeInRight 1s ease 3s forwards;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateY(-50%) translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(-50%) translateX(0);
+            }
+        }
+
+        .tech-tag {
+            padding: 8px 12px;
+            background: rgba(168, 237, 234, 0.1);
+            border: 1px solid rgba(168, 237, 234, 0.3);
+            border-radius: 15px;
+            color: #a8edea;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:hover {
+            background: rgba(168, 237, 234, 0.2);
+            transform: translateX(-5px);
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.8);
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease;
         }
 
-        .modal-content {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            margin: 5% auto;
-            padding: 3rem;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            position: relative;
-        }
-
-        .close {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-            font-size: 2rem;
-            cursor: pointer;
+        .loading-text {
+            font-size: 24px;
+            font-weight: 300;
             color: white;
+            animation: pulse 2s infinite;
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* 波浪效果容器 */
+        #waves-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .section {
-                padding: 3rem 1rem;
+            .controls {
+                top: 20px;
+                right: 20px;
+                flex-direction: row;
+                gap: 10px;
             }
-            
-            .memory-gallery {
-                grid-template-columns: 1fr;
+
+            .control-btn {
+                padding: 10px 15px;
+                font-size: 10px;
+            }
+
+            .info-panel {
+                bottom: 20px;
+                left: 20px;
+                right: 20px;
+                max-width: none;
+                padding: 20px;
+            }
+
+            .tech-stack {
+                display: none;
+            }
+
+            .info-panel h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* 粒子轨迹效果 */
+        .particle-trail {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: trailFade 1s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            to {
+                opacity: 0;
+                transform: scale(0);
             }
         }
     </style>
 </head>
 <body>
-    <!-- Particle Background -->
-    <div class="particles" id="particles"></div>
-    
-    <div class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>我还爱着你</h1>
-                <p>每一个深夜，每一个清晨，我都在想念你的笑容。<br>
-                   请给我一个机会，让我证明我们的爱值得被拯救。</p>
-                <a href="#memories" class="cta-button">重温我们的美好</a>
-            </div>
-            
-            <!-- Floating Hearts -->
-            <div class="heart" style="top: 20%; left: 10%;">💕</div>
-            <div class="heart" style="top: 30%; right: 15%; animation-delay: -2s;">💖</div>
-            <div class="heart" style="bottom: 20%; left: 20%; animation-delay: -4s;">💗</div>
-            <div class="heart" style="bottom: 30%; right: 10%; animation-delay: -1s;">💝</div>
-        </section>
-
-        <!-- Memories Section -->
-        <section class="section" id="memories">
-            <div class="section-content">
-                <h2>我们的美好回忆</h2>
-                <p>还记得我们一起度过的那些美好时光吗？每一个瞬间都深深印在我心里。</p>
-                
-                <div class="memory-gallery">
-                    <div class="memory-card">
-                        <h3>初次相遇</h3>
-                        <p>那个阳光明媚的下午，你的笑容比阳光还要温暖，从那一刻起，我就知道你就是我要寻找的人。</p>
-                    </div>
-                    <div class="memory-card">
-                        <h3>第一次约会</h3>
-                        <p>我们在咖啡厅里聊了整整四个小时，时间仿佛静止了，那种心动的感觉至今还在我心中跳跃。</p>
-                    </div>
-                    <div class="memory-card">
-                        <h3>一起看日出</h3>
-                        <p>凌晨五点爬山看日出，你靠在我肩膀上的那一刻，我觉得整个世界都是完美的。</p>
-                    </div>
-                    <div class="memory-card">
-                        <h3>雨中漫步</h3>
-                        <p>突然下雨我们躲在屋檐下，你说这是最浪漫的意外，我紧紧抱着你，希望时间永远停留。</p>
-                    </div>
-                    <div class="memory-card">
-                        <h3>你的生日</h3>
-                        <p>为你准备惊喜时的紧张和兴奋，看到你开心笑容的那一刻，是我最珍贵的回忆。</p>
-                    </div>
-                    <div class="memory-card">
-                        <h3>共同的梦想</h3>
-                        <p>我们一起规划未来，一起想象我们的小家，那些美好的憧憬现在还能实现吗？</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Apology Section -->
-        <section class="section">
-            <div class="section-content">
-                <h2>我深深的歉意</h2>
-                <p>我知道我犯了错误，我知道我伤害了你。我没有珍惜我们的感情，没有给你足够的关心和理解。</p>
-                <p>每当想起你受伤的表情，我的心就像被撕裂一样疼痛。我恨我自己的冲动和幼稚，我恨我没有保护好我们的爱情。</p>
-                <p>如果道歉有用的话，我愿意对你说一万次对不起。但我知道，行动比言语更重要。</p>
-            </div>
-        </section>
-
-        <!-- Change Section -->
-        <section class="section">
-            <div class="section-content">
-                <h2>我愿意为你改变</h2>
-                <p>我已经深刻反思了自己的问题，我正在努力成为一个更好的人，一个值得你爱的人。</p>
-                
-                <ul class="promise-list">
-                    <li>✨ 我会更加耐心地倾听你的想法和感受</li>
-                    <li>✨ 我会控制我的脾气，用更温和的方式沟通</li>
-                    <li>✨ 我会更加体贴关心你的需要和情绪</li>
-                    <li>✨ 我会给你更多的空间和信任</li>
-                    <li>✨ 我会努力工作，为我们的未来负责</li>
-                    <li>✨ 我会珍惜每一个和你在一起的时刻</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Future Section -->
-        <section class="section">
-            <div class="section-content">
-                <h2>给我们一个重新开始的机会</h2>
-                <p>我相信真爱可以克服一切困难。我们曾经那么相爱，我们创造过那么多美好的回忆，这些都不应该因为一时的误解而消失。</p>
-                <p>我不奢求一切立刻回到从前，我只希望你能给我一个证明的机会。让我用行动向你证明，我们的爱情值得被挽救。</p>
-                <p>无论需要多长时间，无论多么困难，我都愿意为了你、为了我们而努力。</p>
-                <a href="#" class="cta-button" onclick="openModal()">我想要重新开始</a>
-            </div>
-        </section>
+    <div class="loading" id="loading">
+        <div class="loading-text">Initializing Particle System...</div>
     </div>
 
-    <!-- Modal -->
-    <div id="responseModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>💕 心与心的对话 💕</h2>
-            <p style="margin: 2rem 0; font-size: 1.2rem; line-height: 1.6;">
-                谢谢你看完了我想对你说的话。<br><br>
-                我知道这些文字无法弥补我犯的错误，但这是我最真挚的心声。<br><br>
-                如果你愿意，请给我们一个重新开始的机会。<br>
-                如果你还需要时间，我会一直等待。<br><br>
-                因为我爱你，因为你是我生命中最重要的人。
-            </p>
-            <div style="margin-top: 2rem;">
-                <strong style="font-size: 1.1rem; color: #ffd700;">
-                    我永远爱你 ❤️
-                </strong>
-            </div>
+    <div id="canvas-container"></div>
+    <div id="waves-container"></div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="restartAnimation()">🔄 Restart</button>
+        <button class="control-btn" onclick="togglePause()">⏸️ Pause</button>
+        <button class="control-btn" onclick="toggleFullscreen()">🔍 Fullscreen</button>
+    </div>
+
+    <div class="info-panel">
+        <h1>Indulger</h1>
+        <div class="title">Full Stack Engineer</div>
+        <div class="description">
+            专注于创建令人惊叹的Web体验，结合前端创新与后端架构。
+            使用Three.js、WebGL等技术打造沉浸式交互体验。
+        </div>
+        <div class="social-links">
+            <a href="https://github.com/indulger" target="_blank" class="social-link">
+                <span>🐙</span> GitHub
+            </a>
+            <a href="mailto:your.email@example.com" class="social-link">
+                <span>📧</span> Contact
+            </a>
         </div>
     </div>
 
-    <script>
-        // GSAP animations
-        gsap.registerPlugin(ScrollTrigger);
+    <div class="tech-stack">
+        <div class="tech-tag">Three.js</div>
+        <div class="tech-tag">WebGL</div>
+        <div class="tech-tag">React</div>
+        <div class="tech-tag">Node.js</div>
+        <div class="tech-tag">TypeScript</div>
+        <div class="tech-tag">Python</div>
+        <div class="tech-tag">Docker</div>
+        <div class="tech-tag">AWS</div>
+    </div>
 
-        // Hero animations
-        gsap.timeline()
-            .to(".hero h1", {duration: 1.5, opacity: 1, y: 0, ease: "power2.out"})
-            .to(".hero p", {duration: 1.2, opacity: 1, y: 0, ease: "power2.out"}, "-=0.8")
-            .to(".hero .cta-button", {duration: 1, opacity: 1, y: 0, ease: "power2.out"}, "-=0.5");
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+        import group, { batchRenderer } from './src/mesh.js';
+        import WavesEffect from './src/waves.js';
 
-        // Section animations
-        gsap.utils.toArray('.section h2').forEach((heading) => {
-            gsap.fromTo(heading, 
-                {opacity: 0, x: -100}, 
-                {
-                    opacity: 1, 
-                    x: 0, 
-                    duration: 1,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: heading,
-                        start: "top 80%"
-                    }
-                }
-            );
-        });
+        let scene, camera, renderer, controls;
+        let isPaused = false;
+        let wavesEffect;
 
-        gsap.utils.toArray('.section p').forEach((para) => {
-            gsap.fromTo(para, 
-                {opacity: 0, x: 100}, 
-                {
-                    opacity: 1, 
-                    x: 0, 
-                    duration: 1,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: para,
-                        start: "top 80%"
-                    }
-                }
-            );
-        });
+        function init() {
+            // 场景设置
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
 
-        // Memory cards animation
-        gsap.utils.toArray('.memory-card').forEach((card, index) => {
-            gsap.fromTo(card,
-                {opacity: 0, scale: 0.8},
-                {
-                    opacity: 1,
-                    scale: 1,
-                    duration: 0.8,
-                    delay: index * 0.1,
-                    ease: "back.out(1.7)",
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "top 85%"
-                    }
-                }
-            );
-        });
+            // 相机设置 - 更好的视角
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, 30);
 
-        // Promise list animation
-        gsap.utils.toArray('.promise-list li').forEach((item, index) => {
-            gsap.fromTo(item,
-                {opacity: 0, y: 30},
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 0.6,
-                    delay: index * 0.15,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: item,
-                        start: "top 85%"
-                    }
-                }
-            );
-        });
+            // 渲染器设置 - 增强效果
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true,
+                powerPreference: "high-performance"
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.outputColorSpace = THREE.SRGBColorSpace;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
 
-        // CTA button animation
-        gsap.utils.toArray('.cta-button').forEach((button) => {
-            gsap.fromTo(button,
-                {opacity: 0, y: 30},
-                {
-                    opacity: 1,
-                    y: 0,
-                    duration: 1,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: button,
-                        start: "top 85%"
-                    }
-                }
-            );
-        });
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-        // Particle system
-        function createParticles() {
-            const particlesContainer = document.getElementById('particles');
-            const particleCount = 50;
+            // 控制器设置 - 更流畅的交互
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+            controls.enableZoom = true;
+            controls.minDistance = 15;
+            controls.maxDistance = 50;
 
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 10 + 's';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                
-                particlesContainer.appendChild(particle);
-                
-                gsap.to(particle, {
-                    y: -window.innerHeight - 100,
-                    duration: Math.random() * 10 + 10,
-                    repeat: -1,
-                    ease: "none",
-                    delay: Math.random() * 10
-                });
-            }
+            // 添加环境光
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+
+            // 添加点光源
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+
+            // 添加粒子组
+            scene.add(group);
+
+            // 初始化波浪效果
+            initWaves();
+
+            // 鼠标交互效果
+            addMouseInteraction();
+
+            // 隐藏加载界面
+            setTimeout(() => {
+                document.getElementById('loading').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading').style.display = 'none';
+                }, 1000);
+            }, 2000);
         }
 
-        // Modal functions
-        function openModal() {
-            document.getElementById('responseModal').style.display = 'block';
-            gsap.fromTo('.modal-content', 
-                {scale: 0.5, opacity: 0}, 
-                {scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)"}
-            );
+        function initWaves() {
+            const wavesContainer = document.getElementById('waves-container');
+            wavesEffect = new WavesEffect(wavesContainer, {
+        lineColor: 'rgba(226, 22, 22, 0.3)', 
+                waveSpeedX: 0.0125,
+                waveSpeedY: 0.005,
+                waveAmpX: 25,
+                waveAmpY: 12,
+                xGap: 15,
+                yGap: 25,
+                friction: 0.925,
+                tension: 0.005,
+                maxCursorMove: 80
+            });
         }
 
-        function closeModal() {
-            gsap.to('.modal-content', {
-                scale: 0.5, 
-                opacity: 0, 
-                duration: 0.3,
-                onComplete: () => {
-                    document.getElementById('responseModal').style.display = 'none';
+        function addMouseInteraction() {
+            let mouseX = 0, mouseY = 0;
+            
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+                
+                // 相机轻微跟随鼠标
+                camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+                camera.position.y += (mouseY * 2 - camera.position.y) * 0.02;
+                
+                // 创建鼠标轨迹粒子
+                if (Math.random() < 0.1) {
+                    createTrailParticle(event.clientX, event.clientY);
                 }
             });
         }
 
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    gsap.to(window, {duration: 1.5, scrollTo: target, ease: "power2.inOut"});
-                }
-            });
-        });
+        function createTrailParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'particle-trail';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            document.body.appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 1000);
+        }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            createParticles();
-        });
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('responseModal');
-            if (event.target === modal) {
-                closeModal();
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            if (!isPaused) {
+                controls.update();
+                batchRenderer.update(0.016);
+                renderer.render(scene, camera);
             }
         }
+
+        function handleResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // 全局控制函数
+        window.restartAnimation = function() {
+            // 重启粒子系统
+            scene.remove(group);
+            import('./src/mesh.js').then(module => {
+                scene.add(module.default);
+            });
+            
+            // 重启波浪效果
+            if (wavesEffect) {
+                wavesEffect.destroy();
+                initWaves();
+            }
+        };
+
+        window.togglePause = function() {
+            isPaused = !isPaused;
+            const btn = document.querySelector('.control-btn:nth-child(2)');
+            btn.innerHTML = isPaused ? '▶️ Play' : '⏸️ Pause';
+        };
+
+        window.toggleFullscreen = function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        };
+
+        // 事件监听
+        window.addEventListener('resize', handleResize);
+        
+        // 清理函数
+        window.addEventListener('beforeunload', () => {
+            if (wavesEffect) {
+                wavesEffect.destroy();
+            }
+        });
+        
+        // 初始化
+        init();
+        animate();
     </script>
 </body>
 </html>
