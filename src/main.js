@@ -1,15 +1,15 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import mesh from "./mesh.js";
-import { batchRenderer } from "./mesh.js";
+import group, { initParticleSystem } from "./mesh.js";
 import WavesEffect from "./waves.js";
 
 let scene, camera, renderer, controls;
 let isPaused = false;
 let wavesEffect;
+let batchRenderer;
 
-function init() {
+async function init() {
   // 场景设置
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
@@ -60,7 +60,15 @@ function init() {
   scene.add(pointLight);
 
   // 添加粒子组
-  scene.add(mesh);
+  scene.add(group);
+
+  // 异步初始化粒子系统
+  try {
+    const result = await initParticleSystem();
+    batchRenderer = result.batchRenderer;
+  } catch (error) {
+    console.error("Failed to initialize particle system:", error);
+  }
 
   // 初始化波浪效果
   initWaves();
@@ -147,5 +155,6 @@ window.addEventListener("beforeunload", () => {
 });
 
 // 初始化
-init();
-animate();
+init().then(() => {
+  animate();
+});
