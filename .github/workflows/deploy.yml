@@ -2,21 +2,45 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+
+# 添加权限设置
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # 添加环境设置
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v3
         with:
           version: 8
+
       - uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "pnpm"
+
       - run: pnpm install
       - run: pnpm run build
-      - uses: peaceiris/actions-gh-pages@v3
+
+      # 使用官方的 GitHub Pages 部署 Action
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: "./dist"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
