@@ -1,327 +1,780 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indulger - Full Stack Engineer | 粒子艺术展示</title>
-    <link rel="icon" href="/public/logo_texture.png" type="image/png">
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Indulger Text Particle Animation</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
-            color: #ffffff;
-            overflow-x: hidden;
-            line-height: 1.6;
-        }
-
-        /* 粒子容器样式升级 */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.02) 0%, transparent 70%);
-        }
-
-        #canvas-container canvas {
-            display: block;
-            filter: brightness(1.2) contrast(1.1);
-        }
-
-        /* 控制面板升级 */
-        .controls {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            z-index: 1000;
-            display: flex;
-            gap: 15px;
-            flex-direction: column;
-        }
-
-        .control-btn {
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 12px;
-        }
-
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
-        }
-
-        /* 信息面板 */
-        .info-panel {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            z-index: 1000;
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 400px;
-            transform: translateY(100px);
-            opacity: 0;
-            animation: slideUp 1s ease 2s forwards;
-        }
-
-        @keyframes slideUp {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .info-panel h1 {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            background: linear-gradient(45deg, #ffffff, #a8edea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .info-panel .title {
-            font-size: 16px;
-            color: #a8edea;
-            margin-bottom: 15px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .info-panel .description {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .social-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            color: white;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .social-link:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.1);
-        }
-
-        /* 技术栈标签 */
-        .tech-stack {
-            position: fixed;
-            top: 50%;
-            right: 30px;
-            transform: translateY(-50%);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            opacity: 0;
-            animation: fadeInRight 1s ease 3s forwards;
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateY(-50%) translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(-50%) translateX(0);
-            }
-        }
-
-        .tech-tag {
-            padding: 8px 12px;
-            background: rgba(168, 237, 234, 0.1);
-            border: 1px solid rgba(168, 237, 234, 0.3);
-            border-radius: 15px;
-            color: #a8edea;
-            font-size: 11px;
-            font-weight: 500;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-
-        .tech-tag:hover {
-            background: rgba(168, 237, 234, 0.2);
-            transform: translateX(-5px);
-        }
-
-        /* 加载动画 */
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0a0a0a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 1s ease;
-        }
-
-        .loading-text {
-            font-size: 24px;
-            font-weight: 300;
-            color: white;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* 波浪效果容器 */
-        #waves-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-            opacity: 0.6;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .controls {
-                top: 20px;
-                right: 20px;
-                flex-direction: row;
-                gap: 10px;
-            }
-
-            .control-btn {
-                padding: 10px 15px;
-                font-size: 10px;
-            }
-
-            .info-panel {
-                bottom: 20px;
-                left: 20px;
-                right: 20px;
-                max-width: none;
-                padding: 20px;
-            }
-
-            .tech-stack {
-                display: none;
-            }
-
-            .info-panel h1 {
-                font-size: 24px;
-            }
-        }
-
-        /* 粒子轨迹效果 */
-        .particle-trail {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: trailFade 1s ease-out forwards;
-        }
-
-        @keyframes trailFade {
-            to {
-                opacity: 0;
-                transform: scale(0);
-            }
-        }
+      :root {
+        --red: hsl(4, 70%, 50%);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        position: absolute;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Arial Black", sans-serif;
+      }
+      .text-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+      }
+      .letter {
+        position: relative;
+        width: 100px;
+        height: 120px;
+      }
+      .letter.dot {
+        width: 30px;
+      }
+      .particle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 35% 35%,
+          rgba(255, 255, 255, 0.7),
+          rgba(255, 120, 180, 0.8) 20%,
+          rgba(255, 80, 120, 0.7) 35%,
+          rgba(200, 40, 80, 0.6) 50%,
+          rgba(150, 20, 60, 0.4) 70%,
+          transparent
+        );
+        mix-blend-mode: screen;
+        will-change: transform;
+        opacity: 0.95;
+        box-shadow: 0 0 15px rgba(255, 100, 150, 0.6), 0 0 30px rgba(255, 80, 120, 0.4), 0 0 45px rgba(255, 60, 100, 0.2),
+          inset -2px -2px 4px rgba(100, 0, 50, 0.3), inset 2px 2px 4px rgba(255, 255, 255, 0.5);
+        filter: contrast(1.1) brightness(1);
+      }
+      .particle::before {
+        content: "";
+        position: absolute;
+        top: 15%;
+        left: 15%;
+        width: 25%;
+        height: 25%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.3) 40%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(0.3px);
+      }
+      .particle::after {
+        content: "";
+        position: absolute;
+        bottom: 15%;
+        right: 15%;
+        width: 15%;
+        height: 15%;
+        background: radial-gradient(circle, rgba(255, 200, 255, 0.3), rgba(200, 150, 255, 0.15) 50%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(0.5px);
+      }
     </style>
-</head>
-<body>
-    <div class="loading" id="loading">
-        <div class="loading-text">Initializing Particle System...</div>
-    </div>
-
-    <div id="canvas-container"></div>
-    <div id="waves-container"></div>
-
-    <div class="controls">
-        <button class="control-btn" onclick="restartAnimation()">🔄 Restart</button>
-        <button class="control-btn" onclick="togglePause()">⏸️ Pause</button>
-        <button class="control-btn" onclick="toggleFullscreen()">🔍 Fullscreen</button>
-    </div>
-
-    <div class="info-panel">
-        <h1>Indulger</h1>
-        <div class="title">Full Stack Engineer</div>
-        <div class="description">
-            专注于创建令人惊叹的Web体验，结合前端创新与后端架构。
-            使用Three.js、WebGL等技术打造沉浸式交互体验。
-        </div>
-        <div class="social-links">
-            <a href="https://github.com/indulgers" target="_blank" class="social-link">
-                <span>🐙</span> GitHub
-            </a>
-            <a href="mailto:your.email@example.com" class="social-link">
-                <span>📧</span> Contact
-            </a>
-        </div>
-
-    </div>
-
-    <div class="tech-stack">
-        <div class="tech-tag">Three.js</div>
-        <div class="tech-tag">WebGL</div>
-        <div class="tech-tag">React</div>
-        <div class="tech-tag">Node.js</div>
-        <div class="tech-tag">TypeScript</div>
-        <div class="tech-tag">Python</div>
-        <div class="tech-tag">Docker</div>
-        <div class="tech-tag">AWS</div>
-    </div>
-
-    <!-- 改为使用 Vite 的入口点 -->
-    <script type="module" src="/src/main.js"></script>
-</body>
+  </head>
+  <body>
+    <div class="text-container" id="textContainer"></div>
+    <!-- Three.js 用于3D行星 -->
+    <script src="https://unpkg.com/three@0.155.0/build/three.min.js"></script>
+    <!-- 行星背景容器 -->
+    <canvas id="planetCanvas" style="position: fixed; top: 0; left: 0; z-index: -1; pointer-events: none"></canvas>
+    <script type="module">
+      import { animate, createTimeline, createTimer, stagger, utils } from "https://esm.sh/animejs";
+      const textContainer = document.getElementById("textContainer");
+      const viewport = { w: window.innerWidth * 0.5, h: window.innerHeight * 0.5 };
+      const cursor = { x: 0, y: 0 };
+      let allParticles = [];
+      let originalPositions = [];
+      
+      // 各字符的粒子坐标（扩展为indulger）
+      const letterPatterns = {
+        i: [
+          // 上点
+          [45, 20],
+          [50, 20],
+          [55, 20],
+          // 竖线
+          [50, 37],
+          [50, 45],
+          [50, 55],
+          [50, 65],
+          [50, 75],
+          [50, 85],
+          [50, 90],
+        ],
+        n: [
+          // 左竖线
+          [20, 37],
+          [20, 45],
+          [20, 55],
+          [20, 65],
+          [20, 75],
+          [20, 85],
+          [20, 90],
+          // 右竖线
+          [70, 37],
+          [70, 45],
+          [70, 55],
+          [70, 65],
+          [70, 75],
+          [70, 85],
+          [70, 90],
+          // 上曲线
+          [20, 37],
+          [30, 35],
+          [40, 34],
+          [50, 34],
+          [60, 35],
+          [70, 37],
+        ],
+        d: [
+          // 左竖线
+          [20, 37],
+          [20, 45],
+          [20, 55],
+          [20, 65],
+          [20, 75],
+          [20, 85],
+          [20, 90],
+          // 上横线
+          [20, 37],
+          [30, 35],
+          [40, 34],
+          [50, 34],
+          [60, 35],
+          [65, 37],
+          // 右弧线
+          [70, 42],
+          [72, 50],
+          [72, 58],
+          [70, 66],
+          [68, 73],
+          [65, 80],
+          [60, 85],
+          // 下横线
+          [20, 90],
+          [30, 91],
+          [40, 91],
+          [50, 91],
+          [60, 90],
+          [65, 88],
+        ],
+        u: [
+          // 左竖线
+          [20, 37],
+          [20, 45],
+          [20, 55],
+          [20, 65],
+          [20, 75],
+          [20, 80],
+          // 右竖线
+          [70, 37],
+          [70, 45],
+          [70, 55],
+          [70, 65],
+          [70, 75],
+          [70, 80],
+          // 底部弧线
+          [20, 80],
+          [25, 85],
+          [30, 88],
+          [40, 90],
+          [50, 91],
+          [60, 90],
+          [65, 88],
+          [70, 85],
+          [70, 80],
+        ],
+        l: [
+          // 竖线
+          [25, 37],
+          [25, 45],
+          [25, 55],
+          [25, 65],
+          [25, 75],
+          [25, 85],
+          [25, 90],
+          // 底部横线
+          [25, 90],
+          [35, 91],
+          [45, 91],
+          [55, 91],
+          [65, 91],
+          [70, 90],
+        ],
+        g: [
+          // 上部C形
+          [65, 40],
+          [55, 35],
+          [45, 34],
+          [35, 34],
+          [25, 35],
+          [20, 40],
+          [18, 45],
+          // 左竖线（完整）
+          [18, 50],
+          [18, 55],
+          [18, 65],
+          [18, 70],
+          [18, 75],
+          [20, 80],
+          // 下部弧线（左半）
+          [25, 85],
+          [35, 88],
+          [45, 90],
+          [55, 90],
+          [65, 88],
+          [70, 85],
+          // 右竖线（下半部分）
+          [70, 80],
+          [70, 75],
+          [70, 70],
+          // 中间横线（g的特征）
+          [50, 65],
+          [58, 65],
+          [65, 65],
+          [70, 65],
+        ],
+        e: [
+          // 中央横线（最重要）
+          [20, 60],
+          [28, 60],
+          [36, 60],
+          [44, 60],
+          [52, 60],
+          [60, 60],
+          [68, 60],
+          // 上部打开的C形
+          [68, 45],
+          [60, 40],
+          [50, 37],
+          [40, 35],
+          [30, 37],
+          [22, 40],
+          [20, 45],
+          // 右上连接线（e的特征）
+          [68, 45],
+          [70, 50],
+          [70, 55],
+          [68, 60],
+          // 左竖线（上半部分）
+          [20, 45],
+          [20, 50],
+          [20, 55],
+          [20, 60],
+          // 左竖线（下半部分）
+          [20, 60],
+          [20, 65],
+          [20, 70],
+          [20, 75],
+          [20, 80],
+          [20, 85],
+          // 下部打开的C形（更低）
+          [20, 85],
+          [22, 88],
+          [30, 90],
+          [40, 91],
+          [50, 91],
+          [60, 90],
+          [68, 88],
+          [72, 85],
+        ],
+        r: [
+          // 左竖线
+          [20, 37],
+          [20, 45],
+          [20, 55],
+          [20, 65],
+          [20, 75],
+          [20, 85],
+          [20, 90],
+          // 上横线
+          [20, 37],
+          [30, 35],
+          [40, 34],
+          [50, 34],
+          [60, 35],
+          [65, 37],
+          // 右上弧线
+          [70, 42],
+          [72, 48],
+          [70, 54],
+          [65, 58],
+          // 中间横线
+          [20, 60],
+          [30, 60],
+          [40, 60],
+          [50, 60],
+          [60, 60],
+          [65, 58],
+          // 右下对角线
+          [50, 65],
+          [55, 70],
+          [60, 75],
+          [65, 80],
+          [70, 85],
+          [75, 90],
+        ],
+      };
+      
+      const text = "indulger";
+      let currentX = 0;
+      
+      // 创建字符
+      text.split("").forEach((char, charIndex) => {
+        const letterEl = document.createElement("div");
+        letterEl.classList.add("letter");
+        if (char === ".") {
+          letterEl.classList.add("dot");
+        }
+        const pattern = letterPatterns[char];
+        if (!pattern) return;
+        pattern.forEach((pos, i) => {
+          const particle = document.createElement("div");
+          particle.classList.add("particle");
+          // 彩虹渐变
+          const totalIndex = allParticles.length;
+          const hue = (totalIndex / 200) * 360; // 按粒子总数分配彩虹（增加总数以适应更多字符）
+          const saturation = 100;
+          const lightness = 50 + Math.random() * 15;
+          // 立体彩虹渐变背景
+          particle.style.background = `
+          radial-gradient(circle at 35% 35%, 
+            hsla(${hue}, 100%, 90%, 0.7),
+            hsla(${hue}, ${saturation}%, 70%, 0.8) 15%,
+            hsla(${hue}, ${saturation}%, ${lightness}%, 0.85) 30%,
+            hsla(${hue}, ${saturation}%, ${lightness - 10}%, 0.7) 50%,
+            hsla(${hue}, ${saturation - 10}%, ${lightness - 20}%, 0.5) 70%,
+            hsla(${hue}, ${saturation - 20}%, ${lightness - 30}%, 0.3) 85%,
+            transparent
+          )
+        `;
+          // 彩虹可见的阴影和高光
+          particle.style.boxShadow = `
+          0 0 15px hsla(${hue}, 100%, ${lightness}%, 0.7),
+          0 0 25px hsla(${hue}, 100%, ${lightness - 5}%, 0.5),
+          0 0 35px hsla(${hue}, 90%, ${lightness - 10}%, 0.3),
+          inset -1px -1px 3px hsla(${hue + 180}, 60%, 25%, 0.4),
+          inset 2px 2px 4px hsla(${hue}, 70%, 85%, 0.6)
+        `;
+          particle.style.filter = `contrast(1.1) brightness(1.05) saturate(1.3)`;
+          letterEl.appendChild(particle);
+          allParticles.push(particle);
+          // 保存原始位置
+          originalPositions.push({ x: 0, y: 0, letterIndex: charIndex });
+          // 设置初始位置
+          utils.set(particle, {
+            left: pos[0] + "px",
+            top: pos[1] + "px",
+            translateX: "-50%",
+            translateY: "-50%",
+            scale: 0.8 + Math.random() * 0.4,
+            opacity: 0.8 + Math.random() * 0.2,
+            x: 0,
+            y: 0,
+          });
+        });
+        textContainer.appendChild(letterEl);
+      });
+      console.log(`生成 ${allParticles.length} 个 indulger 粒子`);
+      
+      // 脉冲动画
+      const pulse = () => {
+        animate(allParticles, {
+          scale: [1, 1.5, 1],
+          opacity: [0.8, 1, 0.8],
+          duration: 1000,
+          delay: stagger(10),
+          ease: "inOutQuad",
+        });
+      };
+      
+      // 主循环 - 按字母顺序排列
+      const mainLoop = createTimer({
+        frameRate: 15,
+        onUpdate: () => {
+          animate(allParticles, {
+            x: cursor.x,
+            y: cursor.y,
+            delay: stagger(30, { from: "first" }), // 从第一个字母开始
+            duration: 600, // 固定时间移动
+            ease: "outQuart", // 平滑移动
+            composition: "blend",
+          });
+        },
+      });
+      
+      // 自动移动动画
+      const autoMove = createTimeline()
+        .add(
+          cursor,
+          {
+            x: [-viewport.w * 0.45, viewport.w * 0.45],
+            modifier: (x) => x + Math.sin(mainLoop.currentTime * 0.0007) * viewport.w * 0.5,
+            duration: 3000,
+            ease: "inOutExpo",
+            alternate: true,
+            loop: true,
+            onBegin: pulse,
+            onLoop: pulse,
+          },
+          0
+        )
+        .add(
+          cursor,
+          {
+            y: [-viewport.h * 0.45, viewport.h * 0.45],
+            modifier: (y) => y + Math.cos(mainLoop.currentTime * 0.00012) * viewport.h * 0.5,
+            duration: 1000,
+            ease: "inOutQuad",
+            alternate: true,
+            loop: true,
+          },
+          0
+        );
+      
+      // 手动操作定时器 - 暂停动画
+      const manualMovementTimeout = createTimer({
+        duration: 2000,
+        onComplete: () => {
+          // 在光标位置停止
+        },
+      });
+      
+      // 鼠标跟随
+      const followPointer = (e) => {
+        const event = e.type === "touchmove" ? e.touches[0] : e;
+        cursor.x = event.pageX - window.innerWidth / 2;
+        cursor.y = event.pageY - window.innerHeight / 2;
+        autoMove.pause();
+        manualMovementTimeout.restart();
+      };
+      document.addEventListener("mousemove", followPointer);
+      document.addEventListener("touchmove", followPointer);
+      
+      // 初始动画
+      animate(allParticles, {
+        opacity: [0, 0.9],
+        scale: [0, 1],
+        translateX: [stagger([-100, 100]), 0],
+        translateY: [stagger([-100, 100]), 0],
+        duration: 2000,
+        delay: stagger(8, { from: "first" }),
+        ease: "outElastic(1, 0.6)",
+        complete: () => {
+          pulse();
+        },
+      });
+      
+      // 持续闪烁动画
+      allParticles.forEach((particle, i) => {
+        animate(particle, {
+          opacity: [0.9, 1, 0.9],
+          scale: [1, 1.1, 1],
+          duration: 2500 + Math.random() * 2000,
+          delay: Math.random() * 2000,
+          loop: true,
+          ease: "inOutSine",
+        });
+      });
+      
+      // Three.js 初始化行星背景
+      const canvas = document.getElementById("planetCanvas");
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: "high-performance",
+      });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      
+      // 地球几何体和材质（着色器）
+      const earthGeometry = new THREE.SphereGeometry(3, 256, 256);
+      // NASA 高分辨率地球纹理加载器
+      const textureLoader = new THREE.TextureLoader();
+      // 高分辨率地球纹理（8K） - 带备用纹理
+      const earthDayTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/earth-blue-marble.jpg", undefined, undefined, () =>
+        textureLoader.load("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg")
+      );
+      const earthNightTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/earth-night.jpg", undefined, undefined, () =>
+        textureLoader.load("https://eoimages.gsfc.nasa.gov/images/imagerecords/144000/144898/BlackMarble_2016_3km.jpg")
+      );
+      const earthCloudsTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/earth-water.png", undefined, undefined, () =>
+        textureLoader.load("https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57747/cloud_combined_2048.jpg")
+      );
+      const earthBumpTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/earth-topology.png", undefined, undefined, () =>
+        textureLoader.load("https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73934/gebco_08_rev_elev_A2_grey_geo.tif")
+      );
+      
+      // 设置纹理
+      [earthDayTexture, earthNightTexture, earthCloudsTexture, earthBumpTexture].forEach((texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.anisotropy = 16; // 高质量过滤
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+      });
+      
+      // 新建简单稳定地球材质
+      const earthMaterial = new THREE.MeshPhongMaterial({
+        map: earthDayTexture,
+        bumpMap: earthBumpTexture,
+        bumpScale: 0.1,
+        shininess: 0,
+      });
+      
+      // 海洋蓝色附加层
+      const oceanMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          uDayTexture: { value: earthDayTexture },
+        },
+        vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+        fragmentShader: `
+        uniform sampler2D uDayTexture;
+        varying vec2 vUv;
+        
+        void main() {
+          vec3 texColor = texture2D(uDayTexture, vUv).rgb;
+          
+          // 海洋判断: 蓝色多，绿红少
+          float isOcean = step(0.5, texColor.b) * step(texColor.r, 0.3) * step(texColor.g, 0.4);
+          
+          // 海洋部分替换为深蓝
+          vec3 oceanColor = vec3(0.1, 0.3, 0.7);
+          vec3 finalColor = mix(texColor, oceanColor, isOcean);
+          
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `,
+        transparent: false,
+      });
+      
+      // 月球着色器材质（高分辨率）
+      const moonGeometry = new THREE.SphereGeometry(0.8, 128, 128);
+      // NASA 月球高分辨率纹理 - 带备用
+      const moonTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/moon.jpg", undefined, undefined, () =>
+        textureLoader.load("https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg")
+      );
+      const moonBumpTexture = textureLoader.load("https://unpkg.com/three-globe@2.24.3/example/img/moon.jpg", undefined, undefined, () =>
+        textureLoader.load("https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg")
+      );
+      [moonTexture, moonBumpTexture].forEach((texture) => {
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.anisotropy = 16;
+        texture.generateMipmaps = true;
+        texture.minFilter = THREE.LinearMipmapLinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+      });
+      
+      const moonMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          time: { value: 0.0 },
+          sunDirection: { value: new THREE.Vector3(-1, 0.5, 1).normalize() },
+          uMoonTexture: { value: moonTexture },
+          uMoonBump: { value: moonBumpTexture },
+        },
+        vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        varying vec3 vViewPosition;
+        
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vPosition = position;
+          vUv = uv;
+          
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vViewPosition = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+        fragmentShader: `
+        uniform float time;
+        uniform vec3 sunDirection;
+        uniform sampler2D uMoonTexture;
+        uniform sampler2D uMoonBump;
+        varying vec3 vNormal;
+        varying vec3 vPosition;
+        varying vec2 vUv;
+        varying vec3 vViewPosition;
+        
+        void main() {
+          vec3 normal = normalize(vNormal);
+          vec3 lightDir = normalize(sunDirection);
+          
+          // 使用NASA月球纹理
+          vec3 moonColor = texture2D(uMoonTexture, vUv).rgb;
+          
+          // 凹凸贴图显示月球地形
+          float bumpValue = texture2D(uMoonBump, vUv).r;
+          vec3 bumpNormal = normal + (bumpValue - 0.5) * 0.3;
+          bumpNormal = normalize(bumpNormal);
+          
+          // 阳光照明计算
+          float lightIntensity = dot(bumpNormal, lightDir);
+          float NdotL = max(0.0, lightIntensity);
+          
+          // 阴阳分界线
+          float terminator = smoothstep(-0.1, 0.1, lightIntensity);
+          
+          // 月相
+          float phaseAngle = dot(normalize(vPosition), lightDir);
+          float phase = smoothstep(-0.4, 0.4, phaseAngle);
+          
+          // 月球真实反照率
+          float albedo = 0.12; // 月球平均反照率
+          
+          // 最终照明
+          float ambientLight = 0.02; // 太空环境光
+          float diffuseLight = NdotL * albedo;
+          
+          // 调整月球颜色
+          moonColor *= vec3(1.1, 1.0, 0.9);
+          
+          vec3 finalColor = moonColor * (ambientLight + diffuseLight * terminator * phase);
+          
+          // 地球反射光
+          float earthShine = (1.0 - terminator) * 0.08;
+          finalColor += moonColor * earthShine * vec3(0.3, 0.4, 0.6);
+          
+          // 伽马校正
+          finalColor = pow(finalColor, vec3(1.0/2.2));
+          
+          gl_FragColor = vec4(finalColor, 1.0);
+        }
+      `,
+      });
+      
+      // 创建地球和月球网格（使用海洋材质）
+      const earth = new THREE.Mesh(earthGeometry, oceanMaterial);
+      const moon = new THREE.Mesh(moonGeometry, moonMaterial);
+      
+      // 地球位置（右下）
+      earth.position.set(5, -3, -15);
+      // 月球位置（左上）
+      moon.position.set(-6, 4, -12);
+      
+      // 星空背景
+      const starsGeometry = new THREE.BufferGeometry();
+      const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 2,
+        sizeAttenuation: false,
+        transparent: true,
+        opacity: 0.8,
+      });
+      const starsVertices = [];
+      for (let i = 0; i < 2000; i++) {
+        const x = (Math.random() - 0.5) * 2000;
+        const y = (Math.random() - 0.5) * 2000;
+        const z = (Math.random() - 0.5) * 2000;
+        starsVertices.push(x, y, z);
+      }
+      starsGeometry.setAttribute("position", new THREE.Float32BufferAttribute(starsVertices, 3));
+      const stars = new THREE.Points(starsGeometry, starsMaterial);
+      
+      // 地球大气光（辉光效果）
+      const atmosphereGeometry = new THREE.SphereGeometry(3.1, 64, 64);
+      const atmosphereMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+          viewVector: { value: camera.position },
+        },
+        vertexShader: `
+        uniform vec3 viewVector;
+        varying float intensity;
+        void main() {
+          vec3 vNormal = normalize(normalMatrix * normal);
+          vec3 vNormel = normalize(normalMatrix * viewVector);
+          intensity = pow(0.6 - dot(vNormal, vNormel), 2.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+        fragmentShader: `
+        varying float intensity;
+        void main() {
+          vec3 glow = vec3(0.3, 0.6, 1.0) * intensity;
+          gl_FragColor = vec4(glow, intensity * 0.8);
+        }
+      `,
+        side: THREE.BackSide,
+        blending: THREE.AdditiveBlending,
+        transparent: true,
+      });
+      const earthAtmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+      earthAtmosphere.position.copy(earth.position);
+      
+      // 更真实的光照
+      const ambientLight = new THREE.AmbientLight(0x404040, 0.1);
+      const sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+      sunLight.position.set(-10, 5, 8);
+      sunLight.castShadow = true;
+      
+      // 添加到场景
+      scene.add(earth);
+      scene.add(earthAtmosphere);
+      scene.add(moon);
+      scene.add(stars);
+      scene.add(ambientLight);
+      scene.add(sunLight);
+      
+      // 摄像机位置
+      camera.position.z = 10;
+      
+      // 动画循环
+      let planetTime = 0;
+      function animatePlanets() {
+        planetTime += 0.01;
+        // 地球自转
+        earth.rotation.y += 0.01;
+        // 月球自转和公转
+        moon.rotation.y += 0.02;
+        moon.position.x = -6 + Math.cos(planetTime * 0.5) * 2;
+        moon.position.y = 4 + Math.sin(planetTime * 0.5) * 1;
+        // 更新着色器uniform
+        moonMaterial.uniforms.time.value = planetTime;
+        // 星空微旋转
+        stars.rotation.y += 0.0005;
+        stars.rotation.x += 0.0002;
+        renderer.render(scene, camera);
+        requestAnimationFrame(animatePlanets);
+      }
+      animatePlanets();
+      
+      // 窗口大小变化响应
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
 </html>
